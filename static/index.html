@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Time Forum</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="login-page" style="display: none;">
+        <div id="login-left">
+            <div id="login-brand-wrap">
+                <h1 id="login-forum-title">forum</h1>
+                <p id="login-tagline">Connect with friends and the world around you on Forum.</p>
+            </div>
+        </div>
+        <div id="login-right">
+            <div id="login-card">
+                <div id="login-error" style="display:none;"></div>
+                <form id="login-form">
+                    <input type="text" id="login-identifier" placeholder="Email" required>
+                    <input type="password" id="login-password" placeholder="Password" required>
+                    <button type="submit" id="login-submit-btn">LOG IN</button>
+                </form>
+                <button type="button" id="create-account-btn" onclick="showRegister()">Create new account</button>
+                <button type="button" id="guest-btn" onclick="continueAsGuest()">Continue as Guest</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Page (404 / 500 / etc.) -->
+    <div id="error-page" style="display: none;">
+        <div id="error-header">
+            <button id="error-profile-btn" onclick="showProfile()" title="My Profile">&#128100;</button>
+            <nav id="error-nav">
+                <a href="javascript:void(0)" onclick="goFromErrorPage()">Home</a>
+            </nav>
+            <button id="error-logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <div id="error-body">
+            <div id="error-card">
+                <div id="error-icon-wrap">&#9888;</div>
+                <div id="error-code-text">404</div>
+                <div id="error-title-text">Page Not Found</div>
+                <div id="error-desc-text">Sorry, the page you are looking for doesn't exist or has been moved.</div>
+                <button id="error-home-btn" onclick="goFromErrorPage()">Go to Home</button>
+            </div>
+        </div>
+    </div>
+
+<div id="register-page" style="display: none;">
+    <h1>Register</h1>
+    <form id="register-form" class="register-form">
+        <div class="form-column">
+            <label for="register-username">Username:</label>
+            <input type="text" id="register-username" maxlength="30" required>
+
+            <label for="register-email">Email:</label>
+            <input type="email" id="register-email" maxlength="100" required>
+
+            <label for="register-password">Password:</label>
+            <input type="password" id="register-password" maxlength="72" required>
+            <label for="register-age">Age:</label>
+            <input type="number" id="register-age" min="1" max="120" required>
+        </div>
+        
+        <div class="form-column">
+            
+            <label>Gender:</label>
+<div class="gender-group">
+    <label class="gender-option">
+        <input type="radio" name="gender" value="male" required>
+        Male
+    </label>
+
+    <label class="gender-option">
+        <input type="radio" name="gender" value="female" required>
+        Female
+    </label>
+</div>
+            
+            <label for="register-firstName">First Name:</label>
+            <input type="text" id="register-firstName" maxlength="50" required>
+
+            <label for="register-lastName">Last Name:</label>
+            <input type="text" id="register-lastName" maxlength="50" required>
+        </div>
+        
+        <button type="submit" style="grid-column: 1 / -1;">Register</button>
+    </form>
+    <p>Already have an account? <a href="javascript:void(0)" onclick="showLogin()">Login here</a></p>
+</div>
+
+    <div id="home-page" style="display: none;">
+        <div id="home-header">
+            <button id="profile-icon-btn" onclick="showProfile()" title="My Profile">&#128100;</button>
+            <nav id="home-nav">
+                <a href="javascript:void(0)" onclick="showHomePage()">Home</a>
+                <div class="dropdown" id="categories-dropdown">
+                    <button class="dropdown-btn" onclick="toggleCategoriesDropdown(event)">
+                        Categories &#9660;
+                    </button>
+                    <div class="dropdown-menu" id="categories-menu" style="display:none;">
+                        <div class="dropdown-item active" onclick="filterByCategory('All')">All</div>
+                        <div class="dropdown-item" onclick="filterByCategory('Technology')">Technology</div>
+                        <div class="dropdown-item" onclick="filterByCategory('Sport')">Sport</div>
+                        <div class="dropdown-item" onclick="filterByCategory('Gaming')">Gaming</div>
+                        <div class="dropdown-item" onclick="filterByCategory('News')">News</div>
+                        <div class="dropdown-item" onclick="filterByCategory('Programming')">Programming</div>
+                        <div class="dropdown-item" onclick="filterByCategory('Quran')">Quran</div>
+                        <div class="dropdown-item" onclick="filterByCategory('Other')">Other</div>
+                    </div>
+                </div>
+                <a href="javascript:void(0)" onclick="showCreatePostForm()">Create Post</a>
+            </nav>
+            <button id="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div id="home-layout">
+
+            <!-- LEFT PANEL: Users list (always visible) + Chat below -->
+            <div id="left-panel">
+
+                <!-- Users View: always visible -->
+                <div id="users-view">
+                    <h3>Users</h3>
+                    <div id="all-users"></div>
+                </div>
+
+                <!-- Chat View: shown below users when a user is selected -->
+                <div id="chat-view" style="display: none;">
+                    <div id="chat-header">
+                        <button id="close-chat-btn" onclick="closeChat()">&#10005;</button>
+                        <span id="chat-with-name"></span>
+                    </div>
+                    <div id="messages-container"></div>
+                    <div id="typing-indicator"></div>
+                    <div id="message-input-area">
+                        <input type="text" id="message-input" placeholder="Write a message..." maxlength="1000">
+                        <button id="send-btn" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- CENTER: Posts (always visible) -->
+            <div id="posts-view">
+                <!-- Create Post Form (replaces posts list) -->
+                <div id="create-post-form" style="display: none;">
+                    <h2>Create New Post</h2>
+                    <form id="new-post-form">
+                        <label for="post-title">Title:</label>
+                        <input type="text" id="post-title" maxlength="200" required>
+                        <label for="post-content">Content:</label>
+                        <textarea rows="5" id="post-content" maxlength="5000" required></textarea>
+                        <label>Categories (select at least one):</label>
+                        <div class="categories-list">
+                            <label><input type="checkbox" name="category" value="Technology"> Technology</label>
+                            <label><input type="checkbox" name="category" value="Sport"> Sport</label>
+                            <label><input type="checkbox" name="category" value="Gaming"> Gaming</label>
+                            <label><input type="checkbox" name="category" value="News"> News</label>
+                            <label><input type="checkbox" name="category" value="Programming"> Programming</label>
+                            <label><input type="checkbox" name="category" value="Quran"> Quran</label>
+                            <label><input type="checkbox" name="category" value="Other"> Other</label>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit">Create Post</button>
+                            <button type="button" onclick="hideCreatePostForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="posts-container"></div>
+                <div id="comments-sidebar" style="display: none;">
+                    <div class="sidebar-header">
+                        <h3>Comments</h3>
+                        <button onclick="hideComments()">&times;</button>
+                    </div>
+                    <div id="comments-list"></div>
+                    <div class="add-comment">
+                        <h4>Add Comment</h4>
+                        <form id="add-comment-form">
+                            <textarea id="comment-content" rows="3" maxlength="1000" required></textarea>
+                            <button type="submit">Post comment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ==================== PROFILE PAGE ==================== -->
+    <div id="profile-page" style="display: none;">
+
+        <div id="profile-header">
+            <button id="profile-header-icon">&#128100;</button>
+            <nav id="profile-nav">
+                <a href="javascript:void(0)" onclick="showHomePage()">Home</a>
+                <a href="javascript:void(0)" onclick="showProfileCreatePost()">Create Post</a>
+            </nav>
+            <button id="profile-logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Edit Profile View (hidden by default) -->
+        <div id="edit-profile-view" style="display: none;">
+            <div id="edit-profile-card">
+                <h2 id="edit-profile-heading">Edit Profile</h2>
+
+                <div class="ep-field">
+                    <label for="edit-username">Username</label>
+                    <input type="text" id="edit-username">
+                </div>
+
+                <div class="ep-field">
+                    <label for="edit-email">Email</label>
+                    <input type="email" id="edit-email">
+                </div>
+
+                <p class="ep-section-title">Change Password (Optional)</p>
+
+                <div class="ep-field">
+                    <label for="edit-current-password">Current Password</label>
+                    <input type="password" id="edit-current-password">
+                </div>
+
+                <div class="ep-field">
+                    <label for="edit-new-password">New Password</label>
+                    <input type="password" id="edit-new-password" placeholder="Leave blank to keep current password">
+                </div>
+
+                <div class="ep-field">
+                    <label for="edit-confirm-password">Confirm New Password</label>
+                    <input type="password" id="edit-confirm-password" placeholder="Leave blank to keep current password">
+                </div>
+
+                <div class="ep-buttons">
+                    <button id="ep-save-btn" onclick="saveProfile()">Save Changes</button>
+                    <button id="ep-cancel-btn" onclick="cancelEditProfile()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Post View (hidden by default) -->
+        <div id="edit-post-view" style="display: none;">
+            <div id="edit-post-content">
+                <h2 id="edit-post-heading">Edit Post</h2>
+                <input type="hidden" id="edit-post-id">
+
+                <label for="edit-post-title-input">Post Title</label>
+                <input type="text" id="edit-post-title-input" placeholder="Post title...">
+
+                <label for="edit-post-content-input">Post Content</label>
+                <textarea id="edit-post-content-input" rows="8" placeholder="Post content..."></textarea>
+
+                <p class="edit-cat-label">Categories (choose at least one):</p>
+                <div class="edit-categories-list">
+                    <label class="edit-cat-option"><input type="checkbox" name="edit-category" value="Technology"> Technology</label>
+                    <label class="edit-cat-option"><input type="checkbox" name="edit-category" value="Sport"> Sport</label>
+                    <label class="edit-cat-option"><input type="checkbox" name="edit-category" value="Gaming"> Gaming</label>
+                    <label class="edit-cat-option"><input type="checkbox" name="edit-category" value="News"> News</label>
+                    <label class="edit-cat-option"><input type="checkbox" name="edit-category" value="Programming"> Programming</label>
+                    <label class="edit-cat-option"><input type="checkbox" name="edit-category" value="Quran"> Quran</label>
+                    <label class="edit-cat-option"><input type="checkbox" name="edit-category" value="Other"> Other</label>
+                </div>
+
+                <div class="edit-post-buttons">
+                    <button id="save-post-btn" onclick="savePostEdit()">Save Changes</button>
+                    <button id="cancel-post-btn" onclick="cancelPostEdit()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="profile-content">
+
+            <div id="profile-info-card">
+                <div class="profile-field">
+                    <span class="field-label">USERNAME:</span>
+                    <span id="profile-username"></span>
+                </div>
+                <div class="profile-field">
+                    <span class="field-label">EMAIL:</span>
+                    <span id="profile-email"></span>
+                </div>
+            </div>
+
+            <button id="edit-profile-btn" onclick="showEditProfile()">&#9881; Edit Profile</button>
+
+            <div id="profile-tabs">
+                <button class="tab-btn active" id="tab-my-posts" onclick="switchTab('my-posts')">My Posts</button>
+                <button class="tab-btn" id="tab-liked-posts" onclick="switchTab('liked-posts')">Liked Posts</button>
+            </div>
+
+            <div id="profile-posts-container"></div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Auth Required Modal (shown to guests) -->
+    <div id="auth-modal" style="display:none;">
+        <div id="auth-modal-box">
+            <h3>Login Required</h3>
+            <p>Please login to use this feature.</p>
+            <div class="auth-modal-btns">
+                <button id="auth-login-btn" onclick="hideAuthModal(); showLogin();">Log In</button>
+                <button id="auth-cancel-btn" onclick="hideAuthModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/state.js"></script>
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/toast.js"></script>
+    <script src="/static/js/router.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/posts.js"></script>
+    <script src="/static/js/comments.js"></script>
+    <script src="/static/js/reactions.js"></script>
+    <script src="/static/js/chat.js"></script>
+    <script src="/static/js/profile.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
